@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Mudivarthi Vishwak Sai — VLSI Engineer Portfolio
 
 A responsive React + Vite portfolio served by an Express API. The same Node.js service serves the production website, content API, admin tools, resume, and profile photo.
@@ -128,3 +129,6 @@ server/
 render.yaml        # Single-service Render Blueprint and persistent disk
 .env.example      # Required local secret variable names only
 ```
+=======
+# Portfolio-VLSI-
+>>>>>>> 41678d3f9ba41539986327d74fa36a2a8ec9077e
