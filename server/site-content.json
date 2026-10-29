@@ -1,0 +1,174 @@
+{
+  "profile": {
+    "name": "Mudivarthi Vishwak Sai",
+    "title": "Aspiring VLSI Design Verification Engineer | RTL Design Engineer",
+    "email": "saivishu555@gmail.com",
+    "github": "https://github.com/Vishwak-Sai",
+    "linkedin": "https://www.linkedin.com/in/vishwak-sai-mudivarthi-807b52272/"
+  },
+  "skills": [
+    {
+      "title": "HDL & Verification",
+      "items": [
+        "Verilog",
+        "SystemVerilog",
+        "Testbench Development",
+        "Functional Verification",
+        "Universal Verification Methodology"
+      ],
+      "status": "practice"
+    },
+    {
+      "title": "Digital Design",
+      "items": [
+        "Combinational Logic",
+        "Sequential Logic",
+        "Finite State Machines",
+        "Counters & Multiplexers",
+        "FIFO Architecture"
+      ],
+      "status": "practice"
+    },
+    {
+      "title": "EDA & Workflow",
+      "items": [
+        "EDA Playground",
+        "Synopsys Design Compiler / DC Shell",
+        "Linux / Unix Command Line"
+      ],
+      "status": "mixed"
+    },
+    {
+      "title": "Programming & Tools",
+      "items": [
+        "Python",
+        "Git & GitHub"
+      ],
+      "status": "practice"
+    }
+  ],
+  "projects": [
+    {
+      "id": "fifo",
+      "title": "FIFO RTL Design and Verification",
+      "status": "Completed",
+      "category": "RTL Design",
+      "description": "Designed and verified a synchronous FIFO using Verilog, with control logic and testbench-driven simulation.",
+      "tags": [
+        "Verilog",
+        "Testbench",
+        "FIFO",
+        "Synthesis"
+      ],
+      "detail": "Focus areas include FIFO data flow, read/write control, status conditions, and simulation-based checking. Add the exact depth, width, edge cases, and synthesis results from your implementation before publishing.",
+      "github": "https://github.com/Vishwak-Sai/Synchronous-FIFO",
+      "art": "fifo"
+    },
+    {
+      "id": "uart",
+      "title": "UART Transmitter and Receiver",
+      "status": "Completed",
+      "category": "Verification",
+      "description": "Explored UART TX/RX behavior using SystemVerilog testbench development and waveform analysis.",
+      "tags": [
+        "SystemVerilog",
+        "UART",
+        "Verification",
+        "Simulation"
+      ],
+      "detail": "Document the implemented frame format, baud timing, supported data width, and tests you actually ran. Include a waveform screenshot from your own simulation when available.",
+      "github": "https://github.com/Vishwak-Sai/UART-Transmitter-and-Receiver",
+      "art": "wave"
+    },
+    {
+      "id": "tristate",
+      "title": "Tri-State Buffer Design",
+      "status": "Completed",
+      "category": "RTL Design",
+      "description": "Implemented and simulated an enable-controlled tri-state buffer, including high-impedance output behavior.",
+      "tags": [
+        "Verilog",
+        "Tri-State",
+        "High-Z",
+        "Simulation"
+      ],
+      "detail": "The output follows the input when enabled and enters the high-impedance state when disabled. Add your truth table and simulation evidence.",
+      "github": "https://github.com/Vishwak-Sai/Tri-State-Buffer-Verification",
+      "art": "buffer"
+    }
+  ],
+  "additionalProjects": [
+    {
+      "title": "Smart Parking System",
+      "description": "ESP32-CAM, IR sensors, servo gate control, Flask backend, and PostgreSQL integration.",
+      "tags": [
+        "ESP32-CAM",
+        "IoT",
+        "Flask"
+      ]
+    },
+    {
+      "title": "PharmaChain IoT",
+      "description": "IoT concept for pharmaceutical supply-chain monitoring and temperature data visibility.",
+      "tags": [
+        "IoT",
+        "Sensors",
+        "Monitoring"
+      ]
+    },
+    {
+      "title": "Blood Sugar Monitoring System",
+      "description": "A desktop GUI concept with data entry, storage integration, and visualization.",
+      "tags": [
+        "Python",
+        "GUI",
+        "Data Visualization"
+      ]
+    }
+  ],
+  "articles": [
+    {
+      "title": "Blocking vs Non-blocking Assignments",
+      "tag": "SystemVerilog",
+      "summary": "Understand procedural assignment timing and why sequential logic typically uses non-blocking assignments.",
+      "code": "always_ff @(posedge clk) begin\\n  q <= d; // update after the time step\\nend",
+      "takeaway": "Use blocking assignments for many combinational procedural calculations and non-blocking assignments for clocked state updates, following the coding style required by your project."
+    },
+    {
+      "title": "Latch Inference and How to Avoid It",
+      "tag": "RTL Design",
+      "summary": "Learn why incomplete combinational assignments can infer storage unintentionally.",
+      "code": "always_comb begin\\n  y = 1'b0;\\n  if (en) y = a;\\nend",
+      "takeaway": "Assign every output on every path in combinational logic."
+    },
+    {
+      "title": "FIFO Full and Empty Logic",
+      "tag": "Digital Design",
+      "summary": "Explore pointer relationships and status-flag reasoning in FIFO designs.",
+      "code": "// Example only: exact logic depends on FIFO architecture\\nempty = (wr_ptr == rd_ptr);",
+      "takeaway": "Pointer wrap, extra pointer bits, and memory depth determine the correct full/empty equations."
+    },
+    {
+      "title": "Synchronous vs Asynchronous Reset",
+      "tag": "Sequential Logic",
+      "summary": "Compare reset behavior relative to the active clock edge.",
+      "code": "always_ff @(posedge clk) begin\\n  if (rst) q <= '0;\\n  else     q <= d;\\nend",
+      "takeaway": "Choose reset strategy based on the design specification and reset-domain requirements."
+    },
+    {
+      "title": "Moore vs Mealy State Machines",
+      "tag": "FSM",
+      "summary": "Compare outputs that depend on state alone with outputs that also depend on inputs.",
+      "code": "// Moore: output is a function of current state\\nassign out = (state == ACTIVE);",
+      "takeaway": "Choose the FSM style based on timing, latency, and output-glitch requirements."
+    },
+    {
+      "title": "Assertions and Functional Coverage",
+      "tag": "Verification",
+      "summary": "Use properties to catch temporal failures and coverage to measure exercised scenarios.",
+      "code": "property req_gets_ack;\\n  @(posedge clk) req |-> ##[1:3] ack;\\nendproperty",
+      "takeaway": "Assertions check behavior; coverage helps identify scenarios your tests have not exercised."
+    }
+  ],
+  "careerObjective": "To build a career in VLSI, as a Verification Engineer applying my knowledge through challenging projects and contributing to the development of reliable and efficient digital hardware."
+}

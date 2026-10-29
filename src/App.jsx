@@ -1,0 +1,105 @@
+import React, { useEffect, useState } from 'react'
+import { Activity, ArrowDownToLine, ArrowRight, Atom, BookOpen, CheckCircle2, ChevronRight, CircuitBoard, Code2, Cpu, ExternalLink, FileText, Github, Linkedin, Mail, Menu, Moon, ShieldCheck, Upload, UserRound, Wrench, X } from 'lucide-react'
+import { profile as defaultProfile, skills as defaultSkills, projects as defaultProjects, additionalProjects as defaultAdditionalProjects, articles as defaultArticles } from './data'
+
+const API = ''
+const statusClass = s => s === 'Completed' ? 'status complete' : s === 'In Progress' ? 'status progress' : 'status planned'
+
+function Avatar({ photoUrl, name, size = 'large' }) {
+  return <div className={`avatar ${size}`}>{photoUrl ? <img src={`${API}${photoUrl}`} alt={`${name} profile`} /> : <div className="avatar-fallback"><CircuitBoard size={size === 'large' ? 42 : 28}/><span>MVS</span></div>}</div>
+}
+function WaveArt() {
+  return <div className="wave-art" aria-label="Decorative digital waveform illustration">
+    <div className="chip-art"><div className="chip-pins">{Array.from({length: 12}, (_,i)=><i key={i}/>)}</div><Cpu size={52}/><strong>RTL<br/>DESIGN</strong></div>
+    <div className="wave-screen"><div className="screen-head"><span>SIMULATION / SIGNALS</span><span className="live-dot">● LIVE</span></div>{['clk','rst','data_in','data_out','valid'].map((s,i)=><div className="signal" key={s}><span>{s}</span><svg viewBox="0 0 220 24" preserveAspectRatio="none"><path d={i===0?'M0 18 H12 V4 H24 V18 H36 V4 H48 V18 H60 V4 H72 V18 H84 V4 H96 V18 H108 V4 H120 V18 H132 V4 H144 V18 H156 V4 H168 V18 H180 V4 H192 V18 H204 V4 H220':i===1?'M0 4 H35 V20 H95 V4 H145 V20 H220':i===2?'M0 18 H24 V4 H52 V18 H85 V4 H120 V18 H155 V4 H184 V18 H220':i===3?'M0 20 H48 V4 H95 V20 H145 V4 H185 V20 H220':'M0 20 H55 V4 H115 V20 H170 V4 H220'} fill="none" stroke={i%2?'#37e6aa':'#20d5ff'} strokeWidth="2"/></svg></div>)}</div>
+  </div>
+}
+function ProjectArt({ type }) {
+  if (type === 'wave') return <div className="project-art"><Activity size={46}/><div className="mini-waves"><i/><i/><i/></div></div>
+  if (type === 'buffer') return <div className="project-art"><span className="buffer-triangle">▶</span><span className="buffer-lines">A ───── Y<br/>EN ────</span></div>
+  if (type === 'fsm') return <div className="project-art fsm-art"><span>S0</span><ArrowRight/><span>S1</span><ArrowRight/><span>S2</span></div>
+  if (type === 'alu') return <div className="project-art"><Cpu size={48}/><span>32-bit ALU</span></div>
+  return <div className="project-art"><div className="fifo-box">FIFO<br/>Controller</div><div className="fifo-lines">wr_en ───▶<br/>rd_en ───▶<br/>data_in ──▶</div></div>
+}
+function Header({ onAdmin, profile }) {
+  const [open,setOpen] = useState(false)
+  const links = [['About','about'],['Skills','skills'],['Projects','projects'],['Notebook','notebook'],['Resume','resume'],['Contact','contact']]
+  return <header className="header"><a href="#home" className="brand">MVS<span>.</span></a><nav className={open?'nav open':'nav'}>{links.map(([label,id])=><a key={id} href={`#${id}`} onClick={()=>setOpen(false)}>{label}</a>)}</nav><div className="header-actions"><a aria-label="GitHub" href={profile.github} target="_blank" rel="noreferrer"><Github/></a><a aria-label="LinkedIn" href={profile.linkedin} target="_blank" rel="noreferrer"><Linkedin/></a><a aria-label="Email" href={`mailto:${profile.email}`}><Mail/></a><button className="icon-btn admin-shortcut" aria-label="Open admin" onClick={onAdmin}><ShieldCheck size={17}/></button><button className="icon-btn mobile-menu" aria-label="Toggle navigation" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button></div></header>
+}
+function AdminModal({ close, assets, refreshAssets, content, onContentSaved }) {
+  const [password,setPassword] = useState('')
+  const [authed,setAuthed] = useState(false)
+  const [resume,setResume] = useState(null)
+  const [photo,setPhoto] = useState(null)
+  const [message,setMessage] = useState('')
+  const [busy,setBusy] = useState(false)
+  const [contentText,setContentText] = useState(JSON.stringify(content, null, 2))
+  const [showContentEditor,setShowContentEditor] = useState(false)
+  useEffect(()=>{setContentText(JSON.stringify(content, null, 2))},[content])
+  useEffect(()=>{ fetch(`${API}/api/admin/status`,{credentials:'include'}).then(r=>r.json()).then(d=>setAuthed(d.authenticated)).catch(()=>{}) },[])
+  async function login(e){e.preventDefault();setBusy(true);setMessage('');try{const r=await fetch(`${API}/api/admin/login`,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({password})});const d=await r.json();if(!r.ok)throw Error(d.error);setAuthed(true);setMessage('Signed in successfully.')}catch(err){setMessage(err.message)}finally{setBusy(false)}}
+  async function upload(kind,file){if(!file)return;setBusy(true);setMessage('');try{const fd=new FormData();fd.append(kind,file);const r=await fetch(`${API}/api/admin/${kind==='resume'?'resume':'photo'}`,{method:'POST',credentials:'include',body:fd});const d=await r.json();if(!r.ok)throw Error(d.error);setMessage(d.message);if(kind==='resume')setResume(null);else setPhoto(null);await refreshAssets()}catch(err){setMessage(`${err.message} Check the connection to the server and try again.`)}finally{setBusy(false)}}
+  async function saveContent(){
+    setBusy(true);setMessage('')
+    try{
+      const parsed=JSON.parse(contentText)
+      const r=await fetch(`${API}/api/admin/content`,{method:'PUT',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(parsed)})
+      const d=await r.json()
+      if(!r.ok)throw Error(d.error||'Could not save website content.')
+      onContentSaved(parsed)
+      setMessage('All website content saved. Refresh the page if you want to verify the public view.')
+    }catch(err){setMessage(err instanceof SyntaxError?'The content editor contains invalid JSON. Fix the syntax and try again.':err.message)}
+    finally{setBusy(false)}
+  }
+  async function logout(){await fetch(`${API}/api/admin/logout`,{method:'POST',credentials:'include'});setAuthed(false);setPassword('')}
+  return <div className="modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)close()}}><section className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-title"><button className="modal-close icon-btn" onClick={close} aria-label="Close admin"><X/></button><div className="eyebrow"><ShieldCheck size={15}/> PRIVATE CONTROLS</div><h2 id="admin-title">Portfolio Admin</h2><p className="muted">Update your public resume and profile photo. Changes are saved by the server.</p>
+  {!authed?<form onSubmit={login} className="admin-form"><label>Admin password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password" required/></label><button className="btn primary" disabled={busy}>{busy?'Signing in…':'Sign in'} <ArrowRight size={16}/></button></form>:<div className="admin-tools">
+    <div className="upload-card"><FileText/><div><h3>Resume PDF</h3><p>{assets.hasResume?'A resume is currently available for download.':'No resume uploaded yet.'} Uploading replaces the current public PDF.</p><label className="file-picker"><Upload size={16}/> Choose PDF<input type="file" accept="application/pdf,.pdf" onChange={e=>setResume(e.target.files?.[0]||null)}/></label>{resume&&<p className="selected-file">{resume.name}</p>}<button className="btn primary full" disabled={!resume||busy} onClick={()=>upload('resume',resume)}>{busy?'Saving…':'Upload / Replace Resume'}</button></div></div>
+    <div className="upload-card"><UserRound/><div><h3>Profile photo</h3><p>Use a clear headshot. JPG/JPEG, PNG, or WebP; maximum 5 MB.</p><label className="file-picker"><Upload size={16}/> Choose photo<input type="file" accept="image/jpeg,.jpg,.jpeg,image/png,image/webp" onChange={e=>setPhoto(e.target.files?.[0]||null)}/></label>{photo&&<p className="selected-file">{photo.name}</p>}<button className="btn secondary full" disabled={!photo||busy} onClick={()=>upload('photo',photo)}>{busy?'Saving…':'Upload / Replace Photo'}</button></div></div>
+    <div className="upload-card content-editor-card"><Code2/><div><h3>Edit all website content</h3><p>Edit your name, title, email, links, skills, projects, statuses, notebook articles, additional projects, and career objective. Remove an item by deleting it from its array. Keep valid JSON syntax.</p><button className="btn secondary full" onClick={()=>setShowContentEditor(!showContentEditor)}>{showContentEditor?'Hide content editor':'Open full content editor'}</button>{showContentEditor&&<><label className="json-label">Website content JSON<textarea className="json-editor" value={contentText} onChange={e=>setContentText(e.target.value)} spellCheck="false" rows={20}/></label><button className="btn primary full" disabled={busy} onClick={saveContent}>{busy?'Saving…':'Save all website content'}</button></>}</div></div>
+    <button className="text-btn" onClick={logout}>Sign out</button></div>}
+  {message&&<p className="notice" role="status">{message}</p>}<p className="tiny muted">Security note: set a strong ADMIN_PASSWORD and SESSION_SECRET in your server .env file. Do not publish secrets in frontend code.</p></section></div>
+}
+function App() {
+  const [siteContent,setSiteContent] = useState({profile:defaultProfile, skills:defaultSkills, projects:defaultProjects, additionalProjects:defaultAdditionalProjects, articles:defaultArticles, careerObjective:'To build a career in VLSI design and functional verification, applying my knowledge through challenging projects and contributing to the development of reliable and efficient digital hardware.'})
+  const profile=siteContent.profile||defaultProfile
+  const skills=siteContent.skills||defaultSkills
+  const projects=siteContent.projects||defaultProjects
+  const additionalProjects=siteContent.additionalProjects||defaultAdditionalProjects
+  const articles=siteContent.articles||defaultArticles
+  const [admin,setAdmin] = useState(false)
+  const [assets,setAssets] = useState({hasResume:false,photoUrl:null})
+  const [selected,setSelected] = useState(null)
+  const [article,setArticle] = useState(null)
+  const [filter,setFilter] = useState('All')
+  const [mobileToast,setMobileToast] = useState('')
+  const [contentLoadError,setContentLoadError] = useState('')
+  async function refreshAssets(){try{const r=await fetch(`${API}/api/public-assets`);if(r.ok)setAssets(await r.json())}catch{}}
+  async function refreshContent(){
+    try{
+      const r=await fetch(`${API}/api/content`)
+      if(!r.ok)throw Error(`Content API returned HTTP ${r.status}.`)
+      setSiteContent(await r.json())
+      setContentLoadError('')
+    }catch(err){
+      setContentLoadError(`Could not load saved website content: ${err.message}`)
+    }
+  }
+  useEffect(()=>{refreshAssets();refreshContent()},[])
+  const filtered = projects.filter(p=>filter==='All'||p.category===filter)
+  return <div className="app-shell"><Header onAdmin={()=>setAdmin(true)} profile={profile}/>
+    <main>
+      {contentLoadError&&<p className="notice" role="alert">{contentLoadError}</p>}
+      <section className="hero section-wrap" id="home"><div className="hero-copy"><div className="eyebrow"><span className="eyebrow-line"/> VLSI DESIGN & VERIFICATION</div><div className="hero-name-row"><Avatar photoUrl={assets.photoUrl} name={profile.name} size="small"/><div><p className="hello">HELLO, I'M</p><h1>{profile.name}</h1></div></div><h2>Designing Digital Logic.<br/><span>Verifying Every State.</span></h2><p className="hero-lead">An aspiring VLSI engineer focused on RTL design, SystemVerilog-based functional verification, and building reliable digital hardware.</p><div className="hero-buttons"><a className="btn primary" href="#projects">Explore My Projects <ArrowRight size={17}/></a><a href={assets.hasResume?`${API}/api/resume`:undefined} onClick={e=>{if(!assets.hasResume){e.preventDefault();setMobileToast('Resume coming soon — please check back after I upload the latest PDF.')}}} className={`btn secondary ${!assets.hasResume?'disabled-link':''}`} download={assets.hasResume?'Mudivarthi_Vishwak_Sai_Resume.pdf':undefined}><ArrowDownToLine size={17}/> Download Resume</a><a className="btn ghost" href="#contact"><Mail size={17}/> Contact Me</a></div>{mobileToast&&<p className="notice">{mobileToast}</p>}<div className="quick-skills">{[['⌘','RTL Design'],['▤','SystemVerilog'],['⌁','Functional Verification'],['▦','UVM Fundamentals'],['▧','ASIC Synthesis']].map(([ic,label])=><div key={label}><span>{ic}</span><small>{label}</small></div>)}</div></div><WaveArt/></section>
+      <section className="section-wrap about-section" id="about"><div className="section-heading"><div><p className="eyebrow">A LITTLE ABOUT ME</p><h2>Engineering with intent.</h2></div><span className="section-index">01 / ABOUT</span></div><div className="about-grid"><div className="about-copy"><p>I'm a final-year B.Tech student with a strong interest in VLSI design, functional verification, and digital hardware. I enjoy understanding digital logic, designing RTL using Verilog/SystemVerilog, developing testbenches, and verifying design behavior through simulation.</p><p>I'm continuously improving through hands-on projects, systematic debugging, and learning industry-relevant methodologies such as functional verification, UVM fundamentals, and ASIC synthesis workflows.</p><div className="about-callout"><Activity/><span>Curious by design. Methodical in debugging. Focused on reliable hardware.</span></div></div><div className="profile-card"><Avatar photoUrl={assets.photoUrl} name={profile.name}/><h3>{profile.name}</h3><p>VLSI Design Verification<br/>RTL Design Engineer — Aspiring</p><div className="profile-links"><a href={profile.github} target="_blank" rel="noreferrer" aria-label="GitHub"><Github/></a><a href={profile.linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin/></a><a href={`mailto:${profile.email}`} aria-label="Email"><Mail/></a></div><button className="text-btn" onClick={()=>setAdmin(true)}>Update profile photo <ChevronRight size={14}/></button></div></div></section>
+      <section className="section-wrap" id="skills"><div className="section-heading"><div><p className="eyebrow">TOOLS OF THE TRADE</p><h2>Technical Skills</h2></div><span className="section-index">02 / SKILLS</span></div><div className="skills-grid">{skills.map((s,i)=><article className="skill-card" key={s.title}><div className="skill-title">{[<Code2/>,<Cpu/>,<Wrench/>,<Atom/>][i]}<h3>{s.title}</h3></div><div className="skill-tags">{s.items.map((item,j)=><span className="skill-tag" key={item}><i className={s.status==='mixed'&&j>0?'blue-dot':'green-dot'}/>{item}</span>)}</div></article>)}</div><div className="legend"><span><i className="green-dot"/> Practiced / hands-on</span><span><i className="blue-dot"/> Learning / exploring</span><p>Skill labels are qualitative, not proficiency scores. Update them to reflect your current experience.</p></div></section>
+      <section className="section-wrap" id="projects"><div className="section-heading"><div><p className="eyebrow">SELECTED WORK</p><h2>Featured VLSI Projects</h2><p className="section-subtitle">Hardware concepts, RTL implementation, and verification practice.</p></div><span className="section-index">03 / PROJECTS</span></div><div className="filter-row">{['All','RTL Design','Verification','Internship Project'].map(f=><button key={f} className={filter===f?'filter active':'filter'} onClick={()=>setFilter(f)}>{f}</button>)}</div><div className="projects-grid">{filtered.map(p=><article className="project-card" key={p.id}><div className="project-top"><span className={statusClass(p.status)}>{p.status}</span><span className="project-category">{p.category}</span></div><ProjectArt type={p.art}/><h3>{p.title}</h3><p>{p.description}</p><div className="tag-row">{p.tags.map(t=><span key={t}>{t}</span>)}</div><div className="project-actions"><button className="btn small secondary" onClick={()=>setSelected(p)}>View Details <ArrowRight size={14}/></button><a className="btn small ghost" href={p.github} target="_blank" rel="noreferrer"><Github size={15}/> GitHub</a></div></article>)}</div></section>
+      <section className="section-wrap additional-section"><div className="section-heading"><div><p className="eyebrow">BEYOND RTL</p><h2>Additional Engineering Projects</h2></div></div><div className="additional-grid">{additionalProjects.map((p,i)=><article className="additional-card" key={p.title}><div className="additional-icon">{[<CircuitBoard/>,<ShieldCheck/>,<Activity/>][i]}</div><div><h3>{p.title}</h3><p>{p.description}</p><div className="tag-row">{p.tags.map(t=><span key={t}>{t}</span>)}</div></div></article>)}</div></section>
+      <section className="section-wrap" id="notebook"><div className="section-heading"><div><p className="eyebrow">LEARN. TEST. REFINE.</p><h2>Inside My Engineering Notebook</h2></div><span className="section-index">04 / NOTES</span></div><div className="articles-grid">{articles.slice(0,3).map(a=><article className="article-card" key={a.title}><div className="article-icon"><BookOpen/></div><span className="article-tag">{a.tag}</span><h3>{a.title}</h3><p>{a.summary}</p><button className="text-btn" onClick={()=>setArticle(a)}>Read Article <ArrowRight size={15}/></button></article>)}</div><div className="more-articles">{articles.slice(3).map(a=><button key={a.title} onClick={()=>setArticle(a)}>{a.title}<ArrowRight size={14}/></button>)}</div></section>
+      <section className="section-wrap resume-section" id="resume"><div className="section-heading"><div><p className="eyebrow">NEXT OPPORTUNITY</p><h2>Resume & Career</h2></div><span className="section-index">05 / RESUME</span></div><div className="resume-grid"><article className="resume-card"><FileText size={26}/><h3>My Resume</h3><p>{assets.hasResume?'Download the latest resume PDF.':'My latest resume will be available here soon.'}</p><div className="resume-actions"><a className={`btn primary ${!assets.hasResume?'disabled-link':''}`} href={assets.hasResume?`${API}/api/resume`:undefined} onClick={e=>{if(!assets.hasResume){e.preventDefault();setAdmin(true)}}} download="Mudivarthi_Vishwak_Sai_Resume.pdf"><ArrowDownToLine size={16}/> Download Resume</a><button className="btn secondary" onClick={()=>setAdmin(true)}><Upload size={16}/> Replace Resume</button></div></article><article className="resume-card career-card"><Activity size={26}/><h3>Career Objective</h3><p>{siteContent.careerObjective || 'To build a career in VLSI design and functional verification, applying my knowledge through challenging projects and contributing to the development of reliable and efficient digital hardware.'}</p><div className="career-pills"><span>RTL Design</span><span>Functional Verification</span><span>Digital Hardware</span></div></article><article className="resume-card contact-card" id="contact"><Mail size={26}/><h3>Get in Touch</h3><a href={`mailto:${profile.email}`}><Mail size={16}/>{profile.email}</a><a href={profile.linkedin} target="_blank" rel="noreferrer"><Linkedin size={16}/>LinkedIn Profile <ExternalLink size={12}/></a><a href={profile.github} target="_blank" rel="noreferrer"><Github size={16}/>GitHub Profile <ExternalLink size={12}/></a></article></div></section>
+    </main><footer><a href="#home" className="brand">MVS<span>.</span></a><p>Built with curiosity, logic, and a verification mindset.</p><span>© {new Date().getFullYear()} {profile.name}</span></footer>
+    {admin&&<AdminModal close={()=>setAdmin(false)} assets={assets} refreshAssets={refreshAssets} content={siteContent} onContentSaved={setSiteContent}/>}
+    {(selected||article)&&<div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget){setSelected(null);setArticle(null)}}}><section className="detail-modal" role="dialog" aria-modal="true"><button className="modal-close icon-btn" onClick={()=>{setSelected(null);setArticle(null)}} aria-label="Close details"><X/></button>{selected?<><span className={statusClass(selected.status)}>{selected.status}</span><ProjectArt type={selected.art}/><p className="eyebrow">{selected.category}</p><h2>{selected.title}</h2><p>{selected.detail}</p><div className="tag-row">{selected.tags.map(t=><span key={t}>{t}</span>)}</div><a className="btn primary" href={selected.github} target="_blank" rel="noreferrer"><Github size={16}/> Open GitHub <ExternalLink size={14}/></a><p className="tiny muted">The repository link currently points to your GitHub profile. Replace it with the specific project repository URL in <code>src/data.js</code>.</p></>:<><p className="eyebrow">{article.tag} / ENGINEERING NOTE</p><h2>{article.title}</h2><p>{article.summary}</p><pre><code>{article.code.replaceAll('\\n','\n')}</code></pre><h3>Key takeaway</h3><p>{article.takeaway}</p></>}</section></div>}
+  </div>
+}
+export default App
