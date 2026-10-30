@@ -60,7 +60,7 @@
         "FIFO",
         "Synthesis"
       ],
-      "detail": "Focus areas include FIFO data flow, read/write control, status conditions, and simulation-based checking. Add the exact depth, width, edge cases, and synthesis results from your implementation before publishing.",
+      "detail": "Developed a UVM-based verification environment for a 16-depth, 8-bit synchronous FIFO using SystemVerilog. Implemented reusable UVM components, including sequence, driver, monitor, agent, environment, and test. Created stimulus to verify FIFO read and write operations. Implemented a scoreboard with a reference model to check data integrity and FIFO ordering. Verified full and empty conditions, boundary cases, and simultaneous read/write operations. Simulated and debugged the testbench using QuestaSim and EDA Playground.",
       "github": "https://github.com/Vishwak-Sai/Synchronous-FIFO",
       "art": "fifo"
     },
@@ -76,7 +76,7 @@
         "Verification",
         "Simulation"
       ],
-      "detail": "Document the implemented frame format, baud timing, supported data width, and tests you actually ran. Include a waveform screenshot from your own simulation when available.",
+      "detail": "Designed and verified a UART transmitter and receiver using SystemVerilog RTL. Developed a UVM-based testbench to automate functional verification. Implemented UVM components including sequences, driver, monitor, agent, and environment. Verified UART data transmission and reception under different test scenarios. Analyzed simulation waveforms using QuestaSim/EDA Playground to validate functionality. Strengthened understanding of RTL design, UVM methodology, and functional verification.",
       "github": "https://github.com/Vishwak-Sai/UART-Transmitter-and-Receiver",
       "art": "wave"
     },
@@ -92,7 +92,7 @@
         "High-Z",
         "Simulation"
       ],
-      "detail": "The output follows the input when enabled and enters the high-impedance state when disabled. Add your truth table and simulation evidence.",
+      "detail": "Designed and implemented a Tri-State Buffer using Verilog HDL with enable-controlled data flow Implemented high-impedance (Hi-Z) functionality when the enable signal is disabled. Developed a SystemVerilog testbench to verify the buffer's functional behavior. Tested all input combinations to validate data propagation and Hi-Z output conditions. Performed RTL simulation and analyzed waveforms to verify the design functionality.",
       "github": "https://github.com/Vishwak-Sai/Tri-State-Buffer-Verification",
       "art": "buffer"
     }
